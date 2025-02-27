@@ -1,0 +1,9 @@
+{
+    "height": 170,
+    "weight": 70,
+    "age": 45,
+    "gender": "male",
+    "diabetes_type": "II",
+    "pre_meal_glucose": 120,
+    "pre_meal_insulin": 5
+}
