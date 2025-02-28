@@ -4,7 +4,7 @@ import joblib
 from train_glucose_model import GlucosePredictor
 
 # º”‘ÿƒ£–Õ
-def load_model(model, path):
+def load_model(model, path = "..\models\llama.pth"):
     model.load_state_dict(torch.load(path))
     model.eval()
 

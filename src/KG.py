@@ -81,7 +81,7 @@ class KnowledgeGraph:
                 total_nutrition[key] += nutrition[key]
         return total_nutrition
 
-    def recommend_recipes(self):
+    def recommend_recipes(self, meal_type):
         """
         推荐适合用户的食谱组合，确保包含 Meat、Vegetable 和 Staple。
         """
@@ -135,7 +135,7 @@ class KnowledgeGraph:
                     group_nutrition["fiber"],
                     self.user_data["pre_meal_insulin"]
                 )
-                health_score = calculate_health_score(self.user_data, group_nutrition, predicted_glucose)
+                health_score = calculate_health_score(self.user_data, group_nutrition, predicted_glucose, meal_type)
 
         return final_recommendations
 

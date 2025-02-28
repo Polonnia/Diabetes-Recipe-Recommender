@@ -49,33 +49,43 @@ class LlamaDietAssistant:
         response = self.generate_response(prompt)
         return response
 
-    def generate_recipe_recommendation(self, kg):
+    def generate_recipe_recommendation(self, kg, user_data, meal_type="lunch"):
         """
         生成食谱推荐，包括名称、原料及重量、做法。
+        
+        参数：
+        - kg: 知识图谱对象。
+        - user_data: 用户健康数据。
+        - meal_type: 餐次类型，可选值为 "breakfast"（早餐）、"lunch"（午餐）、"dinner"（晚餐）。
+        
+        返回：
+        - 食谱推荐描述。
         """
-        # 获取推荐的食谱
-        recommended_recipes = recommend_recipes(kg)
+        # 获取推荐的食谱组合
+        recommended_recipes, group_health_score = kg.recommend_recipes(user_data, meal_type)
         
         if not recommended_recipes:
             return "暂无推荐的食谱。"
-        
-        
+    
         # 生成食谱推荐描述
         recommendations = []
-        for recipe in recommended_recipes:
-            ingredients = kg.get_recipe_ingredients(recipe)
+        for recipe_name in recommended_recipes:
+            ingredients = kg.get_recipe_ingredients(recipe_name)
             ingredients_text = "\n".join(
                 f"- {i['name']} {i['weight']}g" for i in ingredients
             )
-            
+
             prompt = (
-                f"推荐一道适合糖尿病患者的食谱：{recipe_name}\n"
+                f"推荐一道适合糖尿病患者的{meal_type}食谱：{recipe_name}\n"
                 f"包含的原料及重量：\n{ingredients_text}\n"
-                "请用描述制作这道菜的步骤，并简洁的语言描述这道菜的特点和适合糖尿病患者的原因。"
+                "请用简洁的语言描述这道菜的特点和适合糖尿病患者的原因。"
             )
             response = self.generate_response(prompt)
             recommendations.append(response)
-        
+
+        # 添加总健康评分
+        recommendations.append(f"本组食谱的总健康评分为：{group_health_score:.2f}")
+
         return "\n\n".join(recommendations)
 
     def process_user_rating(self, rating, recipe_name, kg):
@@ -110,23 +120,41 @@ class LlamaDietAssistant:
                 return "评分必须在 0 到 10 之间。"
         except ValueError:
             return "请输入有效的数值。"
-
-    def handle_user_request(self, user_input, kg, user_data):
-        """
-        处理用户请求，自动解析是普通问题还是食谱推荐请求。
-        """
-        if "推荐" in user_input and "食谱" in user_input:
-            # 用户请求食谱推荐
-            recommendations = self.generate_recipe_recommendation(kg, user_data)
+def handle_user_request(self, user_input, kg, user_data):
+    """
+    处理用户请求，自动解析是普通问题还是食谱推荐请求，并区分早、中、晚餐。
+    """
+    # 检查用户输入是否包含食谱推荐关键词
+    if "推荐" in user_input and "食谱" in user_input:
+        # 解析餐次信息
+        meal_type = None
+        if "早餐" in user_input:
+            meal_type = "breakfast"
+        elif "午餐" in user_input:
+            meal_type = "lunch"
+        elif "晚餐" in user_input:
+            meal_type = "dinner"
+        
+        if meal_type:
+            # 用户请求特定餐次的食谱推荐
+            recommendations = self.generate_recipe_recommendation(kg, user_data, meal_type)
             feedback_prompt = (
                 "请用餐后反馈对食谱的评分（0-10 分）和餐后血糖（可选）。\n"
                 "例如：评分：8，餐后血糖：150。"
             )
             return f"{recommendations}\n\n{feedback_prompt}"
         else:
-            # 用户提出普通问题
-            return self.answer_diabetes_question(user_input)
-
+            # 用户未指定餐次，默认推荐午餐
+            recommendations = self.generate_recipe_recommendation(kg, user_data, "lunch")
+            feedback_prompt = (
+                "请用餐后反馈对食谱的评分（0-10 分）和餐后血糖（可选）。\n"
+                "例如：评分：8，餐后血糖：150。"
+            )
+            return f"{recommendations}\n\n{feedback_prompt}"
+    else:
+        # 用户提出普通问题
+        return self.answer_diabetes_question(user_input, user_data)
+    
 # 示例用法
 if __name__ == "__main__":
 
