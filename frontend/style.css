@@ -1,0 +1,32 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+h1 {
+    color: #333;
+    margin-top: 20px;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+.card-header {
+    background-color: #4CAF50;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.card-body {
+    background-color: #ffffff;
+    padding: 20px;
+}
+
+.form-label {
+    font-weight: bold;
+}
+
+button {
+    margin-top: 10px;
+}

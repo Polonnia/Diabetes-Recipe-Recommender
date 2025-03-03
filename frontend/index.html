@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>糖尿病饮食推荐系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEJ6b7m8uPwbKpc78i6i7M9wvM2e3lKkKNSj0D3eV6/e27k9I47ITl/4SK+np" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">糖尿病饮食推荐系统</h1>
+
+        <!-- 用户信息栏 -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h3>请输入您的健康信息</h3>
+            </div>
+            <div class="card-body">
+                <form id="user-data-form">
+                    <div class="mb-3">
+                        <label for="height" class="form-label">身高 (cm)</label>
+                        <input type="number" class="form-control" id="height" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="weight" class="form-label">体重 (kg)</label>
+                        <input type="number" class="form-control" id="weight" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="age" class="form-label">年龄</label>
+                        <input type="number" class="form-control" id="age" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="gender" class="form-label">性别</label>
+                        <select class="form-control" id="gender" required>
+                            <option value="male">男</option>
+                            <option value="female">女</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pre-meal-glucose" class="form-label">餐前血糖 (mg/dL)</label>
+                        <input type="number" class="form-control" id="pre-meal-glucose" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pre-meal-insulin" class="form-label">餐前胰岛素量 (单位)</label>
+                        <input type="number" class="form-control" id="pre-meal-insulin" required>
+                    </div>
+
+                    <!-- 运动水平选择 -->
+                    <div class="mb-3">
+                        <label for="activity-level" class="form-label">运动水平</label>
+                        <select class="form-control" id="activity-level" required>
+                            <option value="sedentary">久坐少动（几乎不运动）</option>
+                            <option value="lightly_active">轻度活动（轻度运动/少量运动）</option>
+                            <option value="moderately_active">中度活动（中等强度运动/每周锻炼3-5次）</option>
+                            <option value="very_active">高度活动（剧烈运动/每天锻炼或每周运动6-7次）</option>
+                            <option value="extra_active">极度活动（非常剧烈运动/每天多次锻炼或工作）</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">提交健康信息</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 推荐食谱展示 -->
+        <div id="recipe-recommendation" class="card mt-5" style="display: none;">
+            <div class="card-header">
+                <h3>推荐食谱</h3>
+            </div>
+            <div class="card-body">
+                <div id="recommended-recipes">
+                    <!-- 动态生成推荐食谱 -->
+                </div>
+                <div id="recipe-feedback">
+                    <h5>请输入您的评分与餐后血糖</h5>
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">食谱评分 (0-10)</label>
+                        <input type="number" class="form-control" id="rating" min="0" max="10" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="post-meal-glucose" class="form-label">餐后血糖 (60min, 120min, 180min)</label>
+                        <input type="text" class="form-control" id="post-meal-glucose" placeholder="如：150, 180, 200" required>
+                    </div>
+                    <button id="submit-feedback" class="btn btn-success w-100">提交反馈</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-GLhlTQ8iRABLrzr+rWz0v3p0Kmq2kp6E1u6nvk9yyjwD0hfe5gJsdmJwvnq2JH6i" crossorigin="anonymous"></script>
+    <script src="app.js"></script>
+</body>
+</html>
