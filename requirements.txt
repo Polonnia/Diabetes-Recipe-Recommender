@@ -1,0 +1,13 @@
+Flask==3.0.2
+Werkzeug==3.0.1
+requests==2.31.0
+python-dotenv==1.0.1
+numpy==1.26.4
+pandas==2.2.1
+scikit-learn==1.4.1
+torch==2.2.1
+transformers==4.38.2
+sentencepiece==0.2.0
+accelerate==0.27.2
+protobuf==4.25.3
+tqdm==4.66.2 

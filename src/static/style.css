@@ -1,0 +1,561 @@
+/* 自定义样式 */
+:root {
+    --primary-color: #4CAF50;
+    --primary-light: #81C784;
+    --primary-dark: #388E3C;
+    --secondary-color: #2196F3;
+    --text-color: #2c3e50;
+    --text-light: #34495e;
+    --text-muted: #7f8c8d;
+    --light-bg: #f8f9fa;
+    --white: #ffffff;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+}
+
+body {
+    min-height: 100vh;
+    background-color: var(--light-bg);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 导航栏样式 */
+.navbar {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    box-shadow: var(--shadow);
+    padding: 1rem 0;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link {
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    transition: var(--transition);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 聊天容器样式 */
+.chat-container {
+    height: 600px;
+    overflow-y: auto;
+    padding: 20px;
+    background: var(--white);
+    border-radius: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: var(--shadow);
+}
+
+/* 聊天气泡样式 */
+.chat-bubble {
+    max-width: 80%;
+    margin-bottom: 15px;
+    padding: 12px 18px;
+    border-radius: 15px;
+    position: relative;
+    word-wrap: break-word;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    animation: fadeIn 0.3s ease;
+    transition: var(--transition);
+    font-weight: 500;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-bubble {
+    background: linear-gradient(135deg, var(--secondary-color), #1976D2);
+    color: var(--white);
+    margin-left: auto;
+    border-bottom-right-radius: 5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.bot-bubble {
+    background-color: var(--white);
+    color: var(--text-color);
+    margin-right: auto;
+    border-bottom-left-radius: 5px;
+    box-shadow: var(--shadow);
+}
+
+/* 食谱推荐样式 */
+.recipe-recommendation {
+    background-color: var(--light-bg);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 10px 0;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: var(--transition);
+}
+
+.recipe-recommendation:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.recipe-recommendation h5 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+/* 输入框样式 */
+.input-group {
+    margin-top: 20px;
+    box-shadow: var(--shadow);
+    border-radius: 25px;
+    overflow: hidden;
+}
+
+#chat-input {
+    border: none;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 25px 0 0 25px;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+#chat-input:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+#send-message {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border: none;
+    padding: 12px 25px;
+    border-radius: 0 25px 25px 0;
+    transition: var(--transition);
+}
+
+#send-message:hover {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+    transform: translateX(2px);
+}
+
+/* 卡片样式 */
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: var(--white);
+    border-radius: 15px 15px 0 0;
+    padding: 1.2rem;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    padding: 2rem;
+    color: var(--text-color);
+}
+
+/* Markdown 样式 */
+.bot-bubble h1, .bot-bubble h2, .bot-bubble h3, .bot-bubble h4, .bot-bubble h5, .bot-bubble h6 {
+    margin-top: 1.2em;
+    margin-bottom: 0.8em;
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+.bot-bubble p {
+    margin-bottom: 1.2em;
+    line-height: 1.7;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.bot-bubble ul, .bot-bubble ol {
+    margin-bottom: 1.2em;
+    padding-left: 2em;
+}
+
+.bot-bubble li {
+    margin-bottom: 0.8em;
+    line-height: 1.6;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.bot-bubble code {
+    background-color: var(--light-bg);
+    padding: 0.3em 0.6em;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.9em;
+}
+
+.bot-bubble pre {
+    background-color: var(--light-bg);
+    padding: 1.2em;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 1.2em 0;
+}
+
+.bot-bubble blockquote {
+    border-left: 4px solid var(--primary-color);
+    margin: 1.2em 0;
+    padding: 0.8em 1.2em;
+    color: #666;
+    background-color: var(--light-bg);
+    border-radius: 0 8px 8px 0;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light-bg);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-light);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .chat-container {
+        height: 500px;
+    }
+    
+    .chat-bubble {
+        max-width: 90%;
+        font-size: 1rem;
+        padding: 10px 15px;
+    }
+
+    .card-header {
+        padding: 1rem;
+    }
+
+    .card-body {
+        padding: 15px;
+    }
+}
+
+/* 加载动画样式 */
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-spinner {
+    font-size: 3rem;
+    color: var(--primary-color);
+}
+
+/* 欢迎消息样式 */
+.welcome-message {
+    padding: 10px;
+}
+
+.welcome-message h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.welcome-message ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.welcome-message li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+/* 输入框动画 */
+@keyframes placeholderFade {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+#chat-input::placeholder {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* 表单样式 */
+.form-floating {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.form-floating > .form-control,
+.form-floating > .form-control-plaintext {
+    height: calc(3.5rem + 2px);
+    line-height: 1.25;
+    padding: 1rem 0.75rem;
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    transition: var(--transition);
+    color: var(--text-color);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.form-floating > .form-control:focus,
+.form-floating > .form-control:not(:placeholder-shown) {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+    color: var(--text-color);
+}
+
+.form-floating > label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    padding: 1rem 0.75rem;
+    overflow: hidden;
+    text-align: start;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+    border: 1px solid transparent;
+    transform-origin: 0 0;
+    transition: opacity .1s ease-in-out,transform .1s ease-in-out;
+    color: var(--primary-dark);
+    font-weight: 500;
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    transform: scale(.85) translateY(-0.5rem) translateX(0.15rem);
+    background-color: transparent;
+    padding: 0 0.5rem;
+    color: var(--primary-dark);
+    font-weight: 600;
+}
+
+.form-floating > .form-control:focus ~ label i,
+.form-floating > .form-control:not(:placeholder-shown) ~ label i {
+    color: var(--primary-dark);
+}
+
+.form-floating i {
+    transition: var(--transition);
+    color: var(--primary-dark);
+}
+
+/* 按钮样式 */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: var(--transition);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .form-floating > .form-control {
+        height: calc(3rem + 2px);
+    }
+    
+    .btn-primary {
+        width: 100%;
+        margin-top: 1rem;
+    }
+}
+
+/* 历史记录侧边栏样式 */
+.history-item {
+    border-bottom: 1px solid #eee;
+    padding: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.history-item:hover {
+    background-color: #f8f9fa;
+}
+
+.history-item.active {
+    background-color: #e9ecef;
+}
+
+.history-time {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.history-meal-type {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+}
+
+.breakfast {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.lunch {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.dinner {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.history-recipes {
+    margin: 10px 0;
+}
+
+.history-recipe {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.history-recipe-name {
+    flex-grow: 1;
+}
+
+.history-recipe-rating {
+    color: #ffc107;
+    cursor: pointer;
+}
+
+.history-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+    margin-top: 10px;
+    font-size: 0.8rem;
+}
+
+.history-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 5px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.history-stat-label {
+    color: #6c757d;
+}
+
+.history-stat-value {
+    font-weight: 500;
+}
+
+/* 评分星星样式 */
+.jq-ry-container {
+    padding: 0 !important;
+}
+
+/* 模态框样式 */
+.modal-content {
+    border-radius: 10px;
+}
+
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-title {
+    color: #495057;
+}
+
+#rating-stars {
+    margin: 20px 0;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .col-md-3 {
+        margin-bottom: 20px;
+    }
+    
+    .history-stats {
+        grid-template-columns: 1fr;
+    }
+}

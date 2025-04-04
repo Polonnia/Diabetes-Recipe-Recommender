@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>健康数据管理 - 糖小智</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <!-- 添加 Font Awesome 图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-robot me-2"></i>糖小智
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-comments me-1"></i>聊天
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/data">
+                            <i class="fas fa-user-circle me-1"></i>健康数据
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h3 class="text-center mb-0">
+                            <i class="fas fa-user-circle me-2"></i>个人健康信息
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="user-data-form">
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="height" required>
+                                        <label for="height">
+                                            <i class="fas fa-ruler-vertical me-2"></i>身高 (cm)
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="weight" required>
+                                        <label for="weight">
+                                            <i class="fas fa-weight me-2"></i>体重 (kg)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="age" required>
+                                        <label for="age">
+                                            <i class="fas fa-birthday-cake me-2"></i>年龄
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="form-floating">
+                                        <select class="form-control" id="gender" required>
+                                            <option value="male">男</option>
+                                            <option value="female">女</option>
+                                        </select>
+                                        <label for="gender">
+                                            <i class="fas fa-venus-mars me-2"></i>性别
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="pre-meal-glucose" required>
+                                        <label for="pre-meal-glucose">
+                                            <i class="fas fa-tint me-2"></i>餐前血糖 (mmol/L)
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="pre-meal-insulin" required>
+                                        <label for="pre-meal-insulin">
+                                            <i class="fas fa-syringe me-2"></i>餐前胰岛素量 (单位)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <div class="form-floating">
+                                    <select class="form-control" id="activity-level" required>
+                                        <option value="sedentary">久坐少动</option>
+                                        <option value="lightly_active">轻度活动</option>
+                                        <option value="moderately_active">中度活动</option>
+                                        <option value="very_active">高度活动</option>
+                                        <option value="extra_active">极度活动</option>
+                                    </select>
+                                    <label for="activity-level">
+                                        <i class="fas fa-running me-2"></i>运动水平
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <i class="fas fa-save me-2"></i>保存健康信息
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载动画 -->
+    <div id="loading" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-circle-notch fa-spin"></i>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='data.js') }}"></script>
+</body>
+</html> 
