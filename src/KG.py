@@ -4,8 +4,8 @@ from utils.health_score import calculate_health_score
 import heapq
 import random
 from typing import List, Dict, Tuple
-import csv
-from datetime import datetime
+# import csv
+# from datetime import datetime
 
 class PriorityRecipe:
     """Wrapper class for recipes to enable priority queue functionality"""
@@ -91,54 +91,125 @@ class KnowledgeGraph:
             )
             return result.single()["score"]
 
-    def get_recipe_ingredients(self, recipe_name: str) -> List[Dict]:
+    def get_recipe_ingredients(self, recipe_name: str, ratio: float = 1.0) -> List[Dict]:
         """
         Get a recipe's ingredients and their properties.
+        Args:
+            recipe_name: Name of the recipe
+            ratio: Scaling factor for ingredient weights (default: 1.0)
+        Returns:
+            List of dictionaries containing ingredient information with adjusted weights
         """
-        with self.driver.session() as session:
-            result = session.run(
-                "MATCH (r:Recipe {name: $recipe_name})-[rel:CONTAINS]->(i) "
-                "RETURN i.name AS name, i.carb AS carb, i.protein AS protein, "
-                "i.fat AS fat, i.fiber AS fiber, rel.weight AS weight, labels(i) AS type",
-                recipe_name=recipe_name
-            )
-            return [dict(record) for record in result]
+        try:
+            with self.driver.session() as session:
+                result = session.run(
+                    "MATCH (r:Recipe {name: $recipe_name})-[rel:CONTAINS]->(i) "
+                    "RETURN i.name AS name, i.carb AS carb, i.protein AS protein, "
+                    "i.fat AS fat, i.fiber AS fiber, rel.weight AS weight, labels(i) AS type",
+                    recipe_name=recipe_name
+                )
+                ingredients = [dict(record) for record in result]
+                
+                # 确保所有数值都是原生 Python float 类型
+                for ingredient in ingredients:
+                    original_weight = ingredient['weight']
+                    adjusted_weight = int(original_weight * float(ratio))
+                    
+                    ingredient['weight'] = adjusted_weight
+                    ingredient['carb'] = float(ingredient.get('carb', 0))
+                    ingredient['protein'] = float(ingredient.get('protein', 0))
+                    ingredient['fat'] = float(ingredient.get('fat', 0))
+                    ingredient['fiber'] = float(ingredient.get('fiber', 0))
+                
+                return ingredients
+                
+        except Exception as e:
+            print(f"获取食谱食材时出错: {str(e)}")
+            raise e
 
     def calculate_recipe_nutrition(self, recipe_name: str) -> Dict[str, float]:
         """
         Calculate total nutrition for a single recipe.
         """
-        ingredients = self.get_recipe_ingredients(recipe_name)
+        ingredients = self.get_recipe_ingredients(recipe_name, 1.0)
         total_carb = sum(i["carb"] * i["weight"] / 100 for i in ingredients)
         total_protein = sum(i["protein"] * i["weight"] / 100 for i in ingredients)
         total_fat = sum(i["fat"] * i["weight"] / 100 for i in ingredients)
         total_fiber = sum(i["fiber"] * i["weight"] / 100 for i in ingredients)
 
-        return {
+        nutrition = {
             "carb": total_carb,
             "protein": total_protein,
             "fat": total_fat,
             "fiber": total_fiber
         }
+        return nutrition
 
-    def calculate_group_nutrition(self, recipe_names: List[str], meal_energy_need: float) -> Tuple[float, Dict[str, float]]:
+
+    def calculate_group_nutrition(self, recipes, nutrient_needs):
         """
-        Calculate total nutrition for a group of recipes.
+        计算一组食谱的总营养成分，根据营养素需求分别计算每个食谱的缩放比例
         """
-        total_nutrition = {"carb": 0, "protein": 0, "fat": 0, "fiber": 0}
-        meal_energy = 0
+        try:
+            # 1. 计算每个食谱的原始营养值
+            recipe_nutritions = []
+            for recipe in recipes:
+                nutrition = self.calculate_recipe_nutrition(recipe)
+                recipe_nutritions.append(nutrition)
+            
+            # 2. 计算每个食谱的缩放比例
+            ratios = [0.0, 0.0, 0.0]
+            
+            # 2.1 计算主食和蔬菜的碳水比例
+            total_carb = recipe_nutritions[0]["carb"] + recipe_nutritions[1]["carb"] + recipe_nutritions[2]["carb"]
+            if total_carb > 0:
+                carb_ratio = nutrient_needs["carb"] / total_carb
+                ratios[0] = carb_ratio * 0.6  # 主食比例
+                ratios[1] = carb_ratio * 0.5
+            else:
+                ratios[0] = 1.0
+                ratios[1] = 1.0
+            # 2.2 计算蛋白质食谱和蔬菜的蛋白质比例
+            total_protein = recipe_nutritions[1]["protein"] + recipe_nutritions[2]["protein"]
+            if total_protein > 0:
+                protein_ratio = nutrient_needs["protein"] / total_protein
+                ratios[1] += protein_ratio * 0.5  # 蔬菜比例取碳水比例和蛋白质比例中的较大值
+                ratios[2] += protein_ratio * 0.8
 
-        for recipe_name in recipe_names:
-            nutrition = self.calculate_recipe_nutrition(recipe_name)
-            meal_energy += nutrition["carb"] * 4 + nutrition["protein"] * 4 + nutrition["fat"] * 9
-
-        ratio = meal_energy_need / meal_energy
-
-        for recipe_name in recipe_names:
-            nutrition = self.calculate_recipe_nutrition(recipe_name)
-            for key in total_nutrition:
-                total_nutrition[key] += nutrition[key] * ratio
-        return ratio, total_nutrition
+            total_fat = recipe_nutritions[1]["fat"] + recipe_nutritions[2]["fat"]
+            if total_fat > 0:
+                fat_ratio = nutrient_needs["fat"] / total_fat
+                ratios[1] = min(ratios[1], fat_ratio)
+                ratios[2] = min(ratios[2], fat_ratio)
+            else:
+                ratios[2] = 1.0
+            
+            # 3. 计算调整后的总营养值
+            total_nutrition = {
+                "energy": 0.0,
+                "carb": 0.0,
+                "protein": 0.0,
+                "fat": 0.0,
+                "fiber": 0.0
+            }
+            
+            for i, nutrition in enumerate(recipe_nutritions):
+                ratio = ratios[i]
+                total_nutrition["energy"] += float(
+                    nutrition["carb"] * 4 * ratio + 
+                    nutrition["protein"] * 4 * ratio + 
+                    nutrition["fat"] * 9 * ratio
+                )
+                total_nutrition["carb"] += float(nutrition["carb"] * ratio)
+                total_nutrition["protein"] += float(nutrition["protein"] * ratio)
+                total_nutrition["fat"] += float(nutrition["fat"] * ratio)
+                total_nutrition["fiber"] += float(nutrition["fiber"] * ratio)
+            
+            return ratios, total_nutrition
+            
+        except Exception as e:
+            print(f"计算群组营养时出错: {str(e)}")
+            raise e
 
     def recommend_recipes(self, user_data: Dict, meal_type: str = "lunch") -> Tuple[List[str], Dict]:
         """
@@ -147,20 +218,22 @@ class KnowledgeGraph:
         - 1 vegetable recipe (from vegetable queue)
         - 1 protein recipe (from protein queue)
         """
-        meal_ratios = {
-            "breakfast": 0.3,
-            "lunch": 0.4,
-            "dinner": 0.3,
-        }
-
-        meal_energy_need = user_data["TDEE"] * meal_ratios[meal_type]
+        nutrient_needs = user_data["nutrient_needs"][meal_type]
+        print(f"Nutrient needs: {nutrient_needs}")
 
         # Get top recipes from all queues
         top_staple, top_vegetable, top_protein = self.get_top_recipes()
         
         health_score = 0.6
         
-        while health_score < 0.7:
+        best_recommendations = None
+        best_ratios = None
+        best_scores = None
+        max_attempts = 100  # 防止无限循环
+        attempts = 0
+        
+        while health_score < 0.7 and attempts < max_attempts:
+            attempts += 1
             # Randomly select 1 from each category's top 10
             staple_recipe = random.choice(top_staple)
             vegetable_recipe = random.choice(top_vegetable) if top_vegetable else random.choice(top_staple)
@@ -169,7 +242,7 @@ class KnowledgeGraph:
             recommendations = [staple_recipe, vegetable_recipe, protein_recipe]
             
             # Calculate nutrition and health scores
-            weight_ratio, group_nutrition = self.calculate_group_nutrition(recommendations, meal_energy_need)
+            ratios, group_nutrition = self.calculate_group_nutrition(recommendations, nutrient_needs)
             predicted_glucose = predict([
                 group_nutrition["carb"],
                 group_nutrition["fat"],
@@ -178,17 +251,37 @@ class KnowledgeGraph:
             ])
             
             health_score = calculate_health_score(
-                group_nutrition, predicted_glucose, meal_energy_need
+                group_nutrition, predicted_glucose, nutrient_needs
             )
             
-        return recommendations, {
-            "health_score": health_score,
-            "PBG": predicted_glucose,
-            "carb": group_nutrition["carb"],
-            "protein": group_nutrition["protein"],
-            "fat": group_nutrition["fat"],
-            "fiber": group_nutrition["fiber"]
-        }
+            if health_score >= 0.7:
+                best_recommendations = recommendations
+                best_ratios = ratios
+                best_scores = {
+                    "health_score": float(health_score),
+                    "energy": float(group_nutrition["energy"]),
+                    "PBG": float(predicted_glucose[1]),
+                    "carb": float(group_nutrition["carb"]),
+                    "protein": float(group_nutrition["protein"]),
+                    "fat": float(group_nutrition["fat"]),
+                    "fiber": float(group_nutrition["fiber"])
+                }
+        
+        # 如果没有找到健康分数>=0.7的组合，使用最后一次计算的结果
+        if best_recommendations is None:
+            best_recommendations = recommendations
+            best_ratios = ratios
+            best_scores = {
+                "health_score": float(health_score),
+                "energy": float(group_nutrition["energy"]),
+                "PBG": float(predicted_glucose[1]),
+                "carb": float(group_nutrition["carb"]),
+                "protein": float(group_nutrition["protein"]),
+                "fat": float(group_nutrition["fat"]),
+                "fiber": float(group_nutrition["fiber"])
+            }
+            
+        return best_recommendations, best_ratios, best_scores
 
     def update_pref(self, rating: float, recipe_name: str) -> str:
         """
@@ -251,7 +344,7 @@ class KnowledgeGraph:
                     heapq.heapify(queue)  # Re-heapify to maintain order
                     return
 
-    def generate_prompt(self, recommendations: List[str], meal_type: str = "lunch") -> str:
+    def generate_prompt(self, recommendations: List[str], meal_type: str = "lunch", ratios: List[float] = [1.0, 1.0, 1.0]) -> str:
         """
         Generate a prompt for LLM to provide cooking instructions for recommended recipes.
         Includes:
@@ -268,8 +361,8 @@ class KnowledgeGraph:
         """
         # Prepare detailed recipes section
         recipes_details = []
-        for recipe_name in recommendations:
-            ingredients = self.get_recipe_ingredients(recipe_name)
+        for i, recipe_name in enumerate(recommendations):
+            ingredients = self.get_recipe_ingredients(recipe_name, ratios[i])
             ingredients_list = "\n".join(
                 f"- {ing['name']}: {ing['weight']}g" for ing in ingredients
             )
@@ -315,77 +408,35 @@ def main():
         "weight": 70,
         "age": 45,
         "gender": "male",
-        "diabetes_type": "II",
         "pre_meal_glucose": 6.0,
         "TDEE": 1800,
-        "activity level": "moderately_active"
-    }
-    
-    # 创建结果记录列表
-    results = []
-    
-    # 模拟30次推荐（每次3个食谱）
-    for i in range(30):
-        print(f"\n=== 第 {i+1} 次推荐 ===")
-        
-        # 获取推荐
-        recommendations, scores = kg.recommend_recipes(user_data)
-        
-        # 记录结果
-        for recipe_name in recommendations:
-            while True:  # 循环直到输入有效
-                try:
-                    # 尝试将输入转换为浮点数
-                    rating = float(input(f"请为食谱 '{recipe_name}' 评分(0-10): "))
-                    # 检查范围
-                    if 0 <= rating <= 10:
-                        break  # 输入有效，退出循环
-                    else:
-                        print("评分必须在0-10之间！")
-                except ValueError:  # 捕获非数字输入错误
-                    print("请输入数字！")
-            
-            # 更新偏好评分
-            kg.update_pref(rating, recipe_name)
-            
-            # 记录结果
-            results.append({
-                "iteration": i+1,
-                "recipe_name": recipe_name,
-                "health_score": scores["health_score"],
-                "glucose_score": scores["glucose_score"],
-                "nutrient_score": scores["nutrient_score"],
-                "user_rating": rating,
-                "preference_score": None  # 将在下面获取
-            })
-            
-        print(f"健康评分: {scores['health_score']:.2f}")
-        print(f"血糖评分: {scores['glucose_score']:.2f}")
-        print(f"营养评分: {scores['nutrient_score']:.2f}")
-    
-    # 获取最终的preference_score
-    with kg.driver.session() as session:
-        for record in results:
-            pref_score = session.run(
-                "MATCH (r:Recipe {name: $name}) RETURN r.preference_score AS score",
-                name=record["recipe_name"]
-            ).single()["score"]
-            record["preference_score"] = pref_score
-    
-    # 关闭数据库连接
-    kg.close()
-    
-    # 将结果保存为CSV文件
-    filename = "recommendation_results.csv"
-    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
-        fieldnames = ['iteration', 'recipe_name', 
-                    'health_score', 'glucose_score', 'nutrient_score',
-                    'user_rating', 'preference_score']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(results)
-    
-    print(f"\n测试完成，结果已保存到 {filename}")
+        "activity level": "moderately_active",
+        "nutrient_needs": {
+        "breakfast": {
+            "carb": 68,
+            "protein": 27,
+            "fat": 18
+        },
+        "lunch": {
+            "carb": 90,
+            "protein": 36,
+            "fat": 24
+        },
+        "dinner": {
+            "carb": 68,
+            "protein": 27,
+            "fat": 18
+        }
+}
+    }   
+   
+    # 获取推荐
+    recommendations, ratios, nutrition = kg.recommend_recipes(user_data)
+    for i, recipe in enumerate(recommendations):
+        result = kg.get_recipe_ingredients(recipe, ratios[i])
+        print(result)
+    print(recommendations, ratios, nutrition)
+     
 
 if __name__ == "__main__":
     main()

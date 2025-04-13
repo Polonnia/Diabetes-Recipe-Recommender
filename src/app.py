@@ -4,10 +4,11 @@ from flask_cors import CORS
 #from gevent import pywsgi
 import os
 import csv
-from utils.health_params import *
 from KG import KnowledgeGraph
 from openai import OpenAI
 from dotenv import load_dotenv
+import json
+from functools import lru_cache
 
 # 加载环境变量
 load_dotenv()
@@ -37,6 +38,12 @@ client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://api.deepseek.com")
 # 服务器API配置
 SERVER_API_URL = "http://e9790bb22df84f8cae565d9b24c0eabe.cloud.lanyun.net:10086"  # 替换为您的服务器地址
 
+# 缓存食谱推荐结果
+@lru_cache(maxsize=100)
+def get_cached_recommendations(meal_type, user_data_str):
+    user_data = json.loads(user_data_str)
+    return kg.recommend_recipes(user_data, meal_type)
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -57,85 +64,138 @@ def chat():
     
     判断逻辑：
     - 如果消息中包含"推荐"和"食谱"，则认为是食谱推荐请求，进一步解析餐次信息；
-    - 否则认为是普通问题，调用 answer_diabetes_question 方法。
+    - 否则认为是普通问题，调用 DeepSeek API 回答。
     """
-    data = request.get_json()
-    message = data.get("message", "")
-    user_data = data.get("user_data", {})
+    try:
+        data = request.get_json()
+        message = data.get("message", "")
+        user_data = data.get("user_data", {})
 
-    # 判断是否为食谱推荐请求
-    if "推荐" in message and "食谱" in message:
-        # 解析餐次信息，若没有明确说明则默认使用午餐
-        if "早餐" in message:
-            meal_type = "breakfast"
-        elif "午餐" in message:
-            meal_type = "lunch"
-        elif "晚餐" in message:
-            meal_type = "dinner"
-        else:
-            meal_type = meal_type_default
-        
-        recipes, _ = kg.recommend_recipes(user_data, meal_type)
-        prompt = kg.generate_prompt(recipes)
-        
-        try:
-            response = client.chat.completions.create(
-                model="deepseek-chat",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "你是一个专业的糖尿病饮食营养师，请根据用户的需求和健康数据，提供详细的食谱建议。"
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
-                temperature=0.7,
-                max_tokens=2000,
-                stream=False
-            )
-            recipe_response = response.choices[0].message.content
-            return jsonify({"message": recipe_response})
-        except Exception as e:
-            return jsonify({"error": f"API请求失败: {str(e)}"}), 500
+        print(f"Received message: {message}")
+        print(f"User data: {user_data}")
 
-    else:
-        # 调用服务器API回答糖尿病问题
-        try:
-            # 构建请求数据
-            payload = {
-                "question": {"question": message},
-                "user_data": user_data  # 直接使用前端传来的user_data
-            }
-            
-            # 发送请求到服务器
-            response = requests.post(
-                f"{SERVER_API_URL}/answer-diabetes-question",
-                json=payload
-            )
-            
-            if response.status_code == 200:
-                return jsonify({"message": response.json()["response"]})
-            else:
-                return jsonify({"error": f"服务器请求失败: {response.text}"}), 500
+        # 判断是否为食谱推荐请求
+        if ("推荐" in message and "食谱" in message) or \
+           ("吃什么" in message) or \
+           ("推荐" in message and ("早餐" in message or "午餐" in message or "晚餐" in message)):
+            try:
+                # 解析餐次信息，若没有明确说明则默认使用午餐
+                if "早餐" in message or "早饭" in message:
+                    meal_type = "breakfast"
+                elif "午餐" in message or "午饭" in message or "中午" in message:
+                    meal_type = "lunch"
+                elif "晚餐" in message or "晚饭" in message or "晚上" in message:
+                    meal_type = "dinner"
+                else:
+                    meal_type = meal_type_default
                 
-        except Exception as e:
-            return jsonify({"error": f"请求失败: {str(e)}"}), 500
+                print(f"Selected meal type: {meal_type}")
+                
+                recipes, ratio, information = kg.recommend_recipes(user_data, meal_type)
+                print(f"Recommended recipes: {recipes}")
+                print(f"Recipe information: {information}")
+                
+                prompt = kg.generate_prompt(recipes, meal_type, ratio)
+                print("Generated prompt for DeepSeek")
+                
+                try:
+                    response = client.chat.completions.create(
+                        model="deepseek-chat",
+                        messages=[
+                            {
+                                "role": "system",
+                                "content": "你是一个专业的糖尿病饮食营养师，请根据用户的需求和健康数据，提供详细的食谱建议。"
+                            },
+                            {
+                                "role": "user",
+                                "content": prompt
+                            }
+                        ],
+                        temperature=0.7,
+                        max_tokens=2000,
+                        stream=False
+                    )
+                    print("DeepSeek API response received")
+                    
+                    recipe_response = response.choices[0].message.content
+                    print(f"DeepSeek response content: {recipe_response[:100]}...")  # 只打印前100个字符
+                    
+                    return jsonify({
+                        "message": recipe_response,
+                        "recipes": recipes,
+                        "mealType": meal_type,
+                        "health_score": information["health_score"],
+                        "energy": information["energy"],
+                        "PBG": information["PBG"],
+                        "carb": information["carb"],
+                        "protein": information["protein"],
+                        "fat": information["fat"],
+                        "fiber": information["fiber"]
+                    })
+                    
+                except Exception as e:
+                    print(f"DeepSeek API error: {str(e)}")
+                    return jsonify({"error": f"DeepSeek API请求失败: {str(e)}"}), 500
+                    
+            except Exception as e:
+                print(f"Recipe recommendation error: {str(e)}")
+                return jsonify({"error": f"食谱推荐失败: {str(e)}"}), 500
+
+        else:
+            try:
+                # 构建用户信息字符串
+                user_info = ""
+                if user_data:
+                    user_info = f"""
+用户信息：
+- 身高：{user_data.get('height')}cm
+- 体重：{user_data.get('weight')}kg
+- 年龄：{user_data.get('age')}岁
+- 性别：{user_data.get('gender')}
+- 餐前血糖：{user_data.get('pre_meal_glucose')}mmol/L
+- 餐前胰岛素：{user_data.get('pre_meal_insulin')}单位
+- 运动水平：{user_data.get('activity_level')}
+"""
+
+                # 调用 DeepSeek API 回答问题
+                response = client.chat.completions.create(
+                    model="deepseek-chat",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "你是一个糖尿病领域专家，请根据用户的情况和问题提供专业的建议。回答要详细、专业且易懂。"
+                        },
+                        {
+                            "role": "user",
+                            "content": f"{user_info}\n问题：{message}\n\n请提供专业的回答，包括：\n1. 针对问题的直接回答\n2. 相关的健康建议\n3. 需要注意的事项"
+                        }
+                    ],
+                    temperature=0.7,
+                    max_tokens=1000,
+                    stream=False
+                )
+                
+                answer = response.choices[0].message.content
+                
+                return jsonify({"message": answer})
+                
+            except Exception as e:
+                print(f"Question answering error: {str(e)}")
+                return jsonify({"error": f"回答问题失败: {str(e)}"}), 500
+                
+    except Exception as e:
+        print(f"General error in chat endpoint: {str(e)}")
+        return jsonify({"error": f"处理请求时发生错误: {str(e)}"}), 500
 
 @app.route("/api/user-data", methods=["POST"])
 def handle_user_data():
     user_data = request.get_json()
-    # 计算基础代谢率(BMR)和总能量消耗(TDEE)，并推算营养需求
-    bmr = calculate_bmr(user_data)
-    tdee = calculate_tdee(bmr, user_data["activity_level"])
-    nutrient_needs = calculate_nutrient_needs(tdee)
-    user_data["nutrient_needs"] = nutrient_needs
     return jsonify({"message": "用户数据已保存", "user_data": user_data})
 
-@app.route("/update_pref", methods=["POST"])
+@app.route("/update-pref", methods=["POST"])
 def update_pref():
     data = request.get_json()
+    print(f"Received update_pref data: {data}")
     recipe_name = data.get("recipe")
     rating = data.get("rating")
     
@@ -147,6 +207,7 @@ def update_pref():
         return jsonify({"message": result})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
 
 # @app.route("/store_feedback", methods=["POST"])
 # def store_feedback():

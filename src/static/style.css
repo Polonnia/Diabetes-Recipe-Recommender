@@ -23,14 +23,31 @@ body {
 .navbar {
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     box-shadow: var(--shadow);
-    padding: 1rem 0;
+    padding: 0.8rem 1.5rem;
 }
 
 .navbar-brand {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 700;
     letter-spacing: 0.5px;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    transition: var(--transition);
+}
+
+.navbar-brand:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.navbar-brand i {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+    color: var(--white);
 }
 
 .nav-link {
@@ -51,7 +68,7 @@ body {
 
 /* 聊天容器样式 */
 .chat-container {
-    height: 600px;
+    height: 700px;
     overflow-y: auto;
     padding: 20px;
     background: var(--white);
@@ -67,8 +84,8 @@ body {
 .chat-bubble {
     max-width: 80%;
     margin-bottom: 15px;
-    padding: 12px 18px;
-    border-radius: 15px;
+    padding: 15px 20px;
+    border-radius: 20px;
     position: relative;
     word-wrap: break-word;
     font-size: 1.1rem;
@@ -76,6 +93,7 @@ body {
     animation: fadeIn 0.3s ease;
     transition: var(--transition);
     font-weight: 500;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes fadeIn {
@@ -90,7 +108,7 @@ body {
 }
 
 .user-bubble {
-    background: linear-gradient(135deg, var(--secondary-color), #1976D2);
+    background: linear-gradient(135deg, #2E7D32, #1B5E20);
     color: var(--white);
     margin-left: auto;
     border-bottom-right-radius: 5px;
@@ -98,11 +116,39 @@ body {
 }
 
 .bot-bubble {
-    background-color: var(--white);
+    background: linear-gradient(135deg, #F9FAFB, #F3F4F6);
     color: var(--text-color);
     margin-right: auto;
     border-bottom-left-radius: 5px;
-    box-shadow: var(--shadow);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* 添加清除历史按钮样式 */
+.clear-history-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition);
+    padding: 5px;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clear-history-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--text-color);
+}
+
+.clear-history-btn i {
+    font-size: 1.1rem;
 }
 
 /* 食谱推荐样式 */
@@ -438,48 +484,74 @@ body {
     }
 }
 
-/* 历史记录侧边栏样式 */
-.history-item {
-    border-bottom: 1px solid #eee;
+/* 历史记录容器样式 */
+.history-container {
+    height: 725px;
+    overflow-y: auto;
     padding: 15px;
-    cursor: pointer;
-    transition: background-color 0.2s;
+}
+
+/* 历史记录空状态样式 */
+.history-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 300px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 20px;
+}
+
+.history-empty i {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: var(--primary-light);
+}
+
+.history-empty h4 {
+    color: var(--text-color);
+    margin-bottom: 15px;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.history-empty p {
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 80%;
+    margin: 0 auto;
+}
+
+.history-item {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
 }
 
 .history-item:hover {
-    background-color: #f8f9fa;
-}
-
-.history-item.active {
-    background-color: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .history-time {
-    font-size: 0.8rem;
-    color: #6c757d;
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 8px;
 }
 
 .history-meal-type {
     display: inline-block;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    margin-bottom: 8px;
-}
-
-.breakfast {
-    background-color: #fff3cd;
-    color: #856404;
-}
-
-.lunch {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.dinner {
-    background-color: #cce5ff;
-    color: #004085;
+    background: #4CAF50;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    margin-bottom: 10px;
 }
 
 .history-recipes {
@@ -490,72 +562,182 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 5px 0;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.history-recipe:last-child {
+    border-bottom: none;
 }
 
 .history-recipe-name {
-    flex-grow: 1;
+    font-weight: 500;
+    color: #333;
 }
 
 .history-recipe-rating {
-    color: #ffc107;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.history-recipe-rating i {
+    color: #ddd;
     cursor: pointer;
+    margin: 0 1px;
+    transition: color 0.2s ease;
+}
+
+.history-recipe-rating i.fas {
+    color: #ffc107;
+}
+
+.history-recipe-rating:hover i {
+    color: #ffc107;
+}
+
+.history-recipe-rating i:hover ~ i {
+    color: #ddd;
 }
 
 .history-stats {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 5px;
-    margin-top: 10px;
-    font-size: 0.8rem;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
 }
 
-.history-stat {
+.history-stats div {
+    font-size: 0.9em;
+    color: #555;
     display: flex;
-    justify-content: space-between;
-    padding: 2px 5px;
-    background-color: #f8f9fa;
-    border-radius: 4px;
+    align-items: center;
 }
 
-.history-stat-label {
-    color: #6c757d;
+/* 清除按钮样式 */
+#clear-history, #clear-chat {
+    padding: 6px 12px;
+    font-size: 0.9em;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    border: 1px solid #ff4757;
+    background: transparent;
+    color: #ff4757;
 }
 
-.history-stat-value {
-    font-weight: 500;
+#clear-history:hover, #clear-chat:hover {
+    background: #ff4757;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
+}
+
+#clear-history i, #clear-chat i {
+    margin-right: 5px;
+}
+
+/* 输入组样式 */
+.input-group-container {
+    padding: 12px 15px;
+    background: white;
+    border-top: 1px solid #eee;
+}
+
+.input-group {
+    margin: 0;
 }
 
 /* 评分星星样式 */
-.jq-ry-container {
-    padding: 0 !important;
+.rateyo {
+    padding: 0;
+    margin: 0 auto;
+    display: inline-block;
 }
 
 /* 模态框样式 */
-.modal-content {
-    border-radius: 10px;
+.modal-body {
+    text-align: center;
 }
 
-.modal-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.modal-title {
-    color: #495057;
-}
-
-#rating-stars {
+#recipe-rating {
     margin: 20px 0;
 }
 
 /* 响应式调整 */
 @media (max-width: 768px) {
-    .col-md-3 {
-        margin-bottom: 20px;
+    .chat-container {
+        height: 600px;
     }
     
-    .history-stats {
-        grid-template-columns: 1fr;
+    .history-container {
+        height: 700px;
     }
+    
+    .history-empty {
+        min-height: 200px;
+        padding: 15px;
+    }
+    
+    .history-empty i {
+        font-size: 36px;
+        margin-bottom: 15px;
+    }
+    
+    .history-empty h4 {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+    
+    .history-empty p {
+        font-size: 0.9rem;
+    }
+}
+
+/* 历史记录加载动画 */
+.history-loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.history-loading i {
+    font-size: 24px;
+    margin-bottom: 10px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 加载动画 */
+#loading {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 聊天气泡中的加载动画 */
+.bot-bubble .loading-spinner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    padding: 8px 12px;
+    font-size: 0.9rem;
+}
+
+.bot-bubble .loading-spinner i {
+    font-size: 16px;
+    animation: spin 1s linear infinite;
+    color: var(--primary-light);
 }

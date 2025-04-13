@@ -1,13 +1,12 @@
 from math import log10
-def calculate_health_score(recipe_nutrition, predicted_glucose, meal_energy_need):
+def calculate_health_score(recipe_nutrition, predicted_glucose, nutrient_needs):
     """
     计算食谱的健康评分。
     
     参数：
-    - user_data: 用户健康数据，包含身高、体重、年龄、性别、活动水平等。
     - recipe_nutrition: 食谱的营养成分，包含碳水化合物、蛋白质、脂肪、纤维。
     - predicted_glucose: 预测的餐后血糖值，包含 60、120、180 分钟的值。
-    - meal_type: 餐次类型，可选值为 "breakfast"（早餐）、"lunch"（午餐）、"dinner"（晚餐）。
+    - nutrient_needs: 用户每餐的营养需求，包含碳水、蛋白质、脂肪。
     
     返回：
     - health_score: 健康评分，范围 0-10。
@@ -16,7 +15,7 @@ def calculate_health_score(recipe_nutrition, predicted_glucose, meal_energy_need
     glucose_score = calculate_glucose_score(predicted_glucose)
     
     # 2. 计算 nutrient_score
-    nutrient_score = calculate_nutrient_score(recipe_nutrition, meal_energy_need)
+    nutrient_score = calculate_nutrient_score(recipe_nutrition, nutrient_needs)
     
     # 3. 综合评分
     health_score = glucose_score * log10(nutrient_score)
@@ -61,25 +60,22 @@ def calculate_glucose_score(predicted_glucose):
     glucose_score = sum(scores) / len(scores)
     return glucose_score
 
-def calculate_nutrient_score(recipe_nutrition, meal_energy_need):
+def calculate_nutrient_score(recipe_nutrition, nutrient_needs):
     """
-    根据用户健康信息和食谱营养成分计算 nutrient_score。
+    根据食谱营养成分和用户营养需求计算 nutrient_score。
     
     参数：
-    - user_data: 用户健康数据，包含身高、体重、年龄、性别、活动水平等。
     - recipe_nutrition: 食谱的营养成分，包含碳水化合物、蛋白质、脂肪、纤维。
-    - meal_type: 餐次类型，可选值为 "breakfast"（早餐）、"lunch"（午餐）、"dinner"（晚餐）。
+    - nutrient_needs: 用户每餐的营养需求，包含碳水、蛋白质、脂肪。
     
     返回：
     - nutrient_score: 营养评分，范围 0-10。
     """
-    meal_nutrient_needs = calculate_nutrient_needs(meal_energy_need)
-
     # 计算食谱的营养评分
     nutrient_score = 0
     for nutrient, value in recipe_nutrition.items():
-        if nutrient in meal_nutrient_needs:
-            ratio = value / meal_nutrient_needs[nutrient]  # 实际含量 / 需求
+        if nutrient in nutrient_needs:
+            ratio = value / nutrient_needs[nutrient]  # 实际含量 / 需求
             # 根据公式：2.5 * (1 - |ratio - 1|)
             score_each = 2.5 * (1 - abs(ratio - 1))
             # 如果不希望出现负分，则可以裁剪到 0
@@ -88,11 +84,3 @@ def calculate_nutrient_score(recipe_nutrition, meal_energy_need):
             nutrient_score += score_each
     
     return nutrient_score
-
-def calculate_nutrient_needs(meal_energy: float):
-    return {
-        "carb": meal_energy * 0.5 / 4,
-        "protein": meal_energy * 0.2 / 4,
-        "fat": meal_energy * 0.3 / 9,
-        "fiber": 10
-    }

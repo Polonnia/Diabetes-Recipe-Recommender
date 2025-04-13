@@ -10,16 +10,17 @@ app = FastAPI()
 
 # 定义用户数据的输入模型
 class UserData(BaseModel):
-    height: int
-    weight: int
+    height: float
+    weight: float
     age: int
     gender: str
-    pre_meal_glucose: int
+    pre_meal_glucose: float
     pre_meal_insulin: int
     activity_level: str
 
-class Question(BaseModel):
+class DiabetesQuestionRequest(BaseModel):
     question: str
+    user_data: UserData
 
 @app.get("/")
 async def index():
@@ -27,10 +28,11 @@ async def index():
 
 # 定义路由：回答带用户数据的糖尿病相关问题
 @app.post("/answer-diabetes-question")
-async def answer_diabetes_question(question: Question, user_data: UserData):
+async def answer_diabetes_question(request: DiabetesQuestionRequest):
+    print(request)
     response = diet_assistant.generate_response(
-        question.question, 
-        user_data.model_dump()
+        request.question, 
+        request.user_data
     )
     print(response)
     return {"response": response}
